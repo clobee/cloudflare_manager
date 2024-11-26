@@ -1,0 +1,15 @@
+
+
+.env
+.terraform/
+terraform.tfstate*
+EOF
+
+.DS_Store*
+ehthumbs.db
+
+Thumbs.db
+._*
+
+*.un~
+.vscode/

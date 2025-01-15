@@ -8,13 +8,6 @@ Make your changes locally in a docker environment then apply your changes to Clo
 </h3>
 <br />
 
-<p align="center">
-    <a href="https://github.com/clobee/cloudflare_manager/tags" target="_blank"><img src="https://img.shields.io/github/v/tag/clobee/cloudflare_manager?logo=github&color=79A7B5&link=https%3A%2F%2Fgithub.com%2Fclobee%2Fcloudflare_manager%2Freleases" alt="GitHub tag (with filter)"/></a>
-    <a href="https://github.com/clobee/cloudflare_manager/issues" target="_blank"><img src="https://img.shields.io/github/issues/clobee/cloudflare_manager?logo=github&color=2ea087&link=https%3A%2F%2Fgithub.com%2Fclobee%2Fcloudflare_manager%2Fissues" alt="GitHub issues"/></a>
-</p>
-
-<br />
-
 > This project is currently in alpha state, so expect major changes in the future!
 
 <p align="center">

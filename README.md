@@ -1,184 +1,190 @@
 
-# TERRAFORM / CLOUDFLARE
+<h1 align="center">
+Development Environment to manage your Cloudflare resources, using Terraform.
+</h1>
 
-## DOC: https://pernod-ricard.atlassian.net/browse/MNB-792
+<h3 align="center">
+Make your changes locally in a docker environment then apply your changes to Cloudflare via Github actions. 
+</h3>
+<br />
 
-## =========================
-## Terraform
-## =========================
+<p align="center">
+    <a href="https://github.com/clobee/cloudflare_manager/tags" target="_blank"><img src="https://img.shields.io/github/v/tag/clobee/cloudflare_manager?logo=github&color=79A7B5&link=https%3A%2F%2Fgithub.com%2Fclobee%2Fcloudflare_manager%2Freleases" alt="GitHub tag (with filter)"/></a>
+    <a href="https://github.com/clobee/cloudflare_manager/issues" target="_blank"><img src="https://img.shields.io/github/issues/clobee/cloudflare_manager?logo=github&color=2ea087&link=https%3A%2F%2Fgithub.com%2Fclobee%2Fcloudflare_manager%2Fissues" alt="GitHub issues"/></a>
+</p>
 
-With Cloudflare’s Terraform provider, we can manage the Cloudflare global network using the same familiar tools we use to automate the rest of our infrastructure. Define and store configuration in source code repositories like GitHub, track and version changes over time, and roll back when needed — all without needing to use the Cloudflare APIs.
+<br />
 
-### Best Practices
+> This project is currently in alpha state, so expect major changes in the future!
 
-https://developers.cloudflare.com/terraform/advanced-topics/best-practices/
+<p align="center">
+Contributors and early adopters are welcome!
+</p>
 
-### Getting started
+## Pre-Requisite
 
-https://developers.cloudflare.com/terraform/installing/
+- The Terraform state is managed in terraform cloud (best practice). This lets your team manage infrastructure using HCP Terraform, which also handles state data. 
 
-```bash
-brew tap hashicorp/tap
-brew install hashicorp/tap/terraform
+In Terraform Cloud, create an organization and a workspace
+
+https://app.terraform.io/public/signup/account?product_intent=terraform
+
+- You will also need the email you are using in Cloudflare and your Cloudflare api key
+
+https://developers.cloudflare.com/fundamentals/api/get-started/keys/
+
+- The Github Actions requires a Github User Token 
+
+https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens
+
+
+## DOC used:
+
+- https://developers.cloudflare.com/terraform/advanced-topics/best-practices/
+- https://registry.terraform.io/providers/cloudflare/cloudflare/latest/docs
+- https://github.com/cloudflare/cf-terraforming
+
+
+## The tools used:
+
+  1. **Cloudflare:**  
+    Cloudflare is a service that helps make websites faster, safer, and more reliable.
+
+  2. **Docker:**  
+    Docker is a tool that makes it easy to run apps anywhere by putting them in small, ready-to-go packages called containers. The whole code/application is contain in a controlled environment (which can run in most common Operator system E.g: windows, Mac...). 
+
+  3. **Terraform:**  
+    Terraform is an open-source tool for managing cloud infrastructure. 
+    It uses files to define and control resources.
+
+  4. **Github:**  
+    GitHub is a web-based platform which allows users to store and manage their source code, track changes, and collaborate on projects with others.
+
+
+## The Concept in a Nutshell
+
+Let's consider a Cloudflare account with 2 ressources (E.g: page rules, firewall rules...)
+
+![image](https://github.com/user-attachments/assets/456db285-290e-4d84-bdd9-4cbb347f6875)
+
+1. When you run the Docker command to initialise the entire environment, a script (/scripts/docker.sh) will clone the Cloudflare resources locally into the ./generated folder.
+   _This step is an helper, so as a dev you have all the last changes in your local environment ready to be used._
+
+![image](https://github.com/user-attachments/assets/db4dde81-e300-4f34-9304-aff94a948ae9)
+
+2. In parallel, the resources already tracked by Terraform will be loaded into Terraform local state.  
+The ./modules folder contains the resources that have already been added to the system.  
+
+3. A new resource can be added see comments.  
+The cloudflare resources are stored in the folder ./modules/ 
+
+![image](https://github.com/user-attachments/assets/0ea6e1af-1d3e-4b3c-8bd9-8899cbb2f91b)
+
+The modules must be referenced in the main.tf file to be detected by Terraform.
+
+![image](https://github.com/user-attachments/assets/5333939e-7ea6-4b67-88dd-b99859b6b9b1)
+
+Don't forget to add the main.tf to your each module you want to add 
+
+![image](https://github.com/user-attachments/assets/6e5c4b62-c812-4c74-a41d-b9246a1dac47)
+
+Pushing changes to GitHub after adding a new resource will trigger a suite of Terraform commands (refer to terraform.yml in GitHub Actions).
+
+![image](https://github.com/user-attachments/assets/c83ec766-f1f3-4b35-813c-17f5f7cc8eef)
+
+4. If the Terraform actions end with a succeful outcome then the change can be found in Cloudflare (if not a related error will be shown in the Github actions summary)
+
+![image](https://github.com/user-attachments/assets/bba1d128-ec7e-482a-ad31-c9d3ee18dba5)
+
+
+## Getting started
+
+- First, Fork this project in your environment
+
+- Set secrets variables in your repo settings
+
+```text
+CLOUDFLARE_EMAIL
+CLOUDFLARE_API_KEY
+
+TF_WORKSPACE
+TF_CLOUD_ORGANIZATION
+
+GH_USER_TOKEN
 ```
 
-https://github.com/cloudflare/cf-terraforming
-```bash
-brew tap cloudflare/cloudflare
+- Create your .env file (use the .env.tmp as a base)
 
-# do not use brew as it sometimes install older version
-go install github.com/cloudflare/cf-terraforming/cmd/cf-terraforming@latest
-#optional: export PATH="$PATH:/Users/clobee/go/bin"
+- Build your local Docker environment
+
+```bash
+git clone git@github.com:<MY_GITHUB_USERNAME>/cloudflare_manager.git
 ```
 
-Which version is installed
+- Start your docker environment
+
 ```bash
-terraform --version
+# Build the image (if anything has changed)
+docker compose down; docker-compose build; docker-compose up -d
 ```
 
-If using Visio Code, we recommend to use the following extensionhttps://marketplace.visualstudio.com/items?itemName=HashiCorp.terraform
+- Start applying your changes (in the modules folder)
 
 
-List / Find a provider https://registry.terraform.io/browse/providers
-In our case we are using Cloudflare https://registry.terraform.io/providers/cloudflare/cloudflare/latest/docs. The Cloudflare provider is used to interact with resources supported by Cloudflare.
+On the related module (you can run any Terraform commands directly from your docker environment)
+- Commit your changes
+- Check your changes in Cloudflare
 
 
-### API tokens
+You can then enter your working environment (or check the logs of all the commands). 
 
-From the Cloudflare dashboard ↗,
-go to My Profile > API Tokens for user tokens.
-For Account Tokens, go to Manage Account > API Tokens.
-
-
-### Actions
-0. Load the .env variables
 ```bash
-# https://gist.github.com/mihow/9c7f559807069a03e302605691f85572
-# set -a; source .env; set +a
-# Verify : env | grep CLOU
-set -o allexport; source .env; set +o allexport
+# Drop into a bash session
+docker exec -it cloudflare_manager sh
+
+#Run a non interactive command 
+docker exec -it cloudflare_manager cat logs.txt
 ```
 
-1.
+The system requires some time to build the working environment.
+A log file, LOGS.txt, is generated, containing all the commands executed during the entire process.
+
+
+------
+
+
+## Some Helpers
+
+
+### Docker commands
 
 ```bash
-
-terraform init
-
-# Compare the LOCAL infrastructure with the REMOTE changes
-terraform plan
-
-# Mirror the REMOTE to our LOCAL version
-# Resource: cloudflare_record | cloudflare_page_rule | cloudflare_zone
-cf-terraforming generate --resource-type "cloudflare_record" --zone $CLOUDFLARE_ZONE_ID > imported.tf
-
-# Import the current CF content in our project (always run this before you start any modif)
-cf-terraforming import --resource-type "cloudflare_record" --zone $CLOUDFLARE_ZONE_ID > tmp.sh
-
-```
-
-
-
-
-Docker compose
-```bash
-# Run one shot command
-docker-compose -f docker-compose.yml run terraform init
-
-# Start the entire container
-docker-compose -f docker-compose.yml build terraform
-
-
-docker compose exec -it gcms_cloudflare-terraform-run-eebb9551f746 sh -c "echo 1"
-
-
-```
-
-
-
-
-
-
-
-List the contianers
-```bash
+# List the containers
 docker compose ps -a
 docker compose rm
 ```
 
-
-
-
-
-
-
-### Github actions
-
-https://www.youtube.com/watch?v=0BNwAEwYZlA&list=PLeXyNq8uiaAYtXbeeLKwGdyHOn6JXE4He&index=4
-
-
-
-
-
-
-
-
-
+### Terraform commands
 
 ```bash
-# build docker
-❯❯ docker build --rm --tag erangaeb/terraform-k8s:0.1 .
+# Initializes all modules
+terraform init
 
-# run terraform init
-❯❯  docker-compose -f docker-compose.yml run --rm terraform init
+# Generate an execution plan that shows the changes needed to reach the desired state
+terraform plan
 
-# run terraform init
-❯❯  docker-compose -f docker-compose.yml run --rm terraform claude
+# Execute the plan to create or update the infrastructure
+terraform apply
 
-# run terrafrom plan
-❯❯ docker run --name terraform -v /private/var/services/terraform:/app/.state erangaeb/terraform-k8s:0.1 plan
-
-
-# run terraform apply
-❯❯ docker run --name terraform -v /private/var/services/terraform:/app/.state erangaeb/terraform-k8s:0.1 apply
-
-
-# terraform apply will deploy kubernets resource in minkube cluster
-❯❯ kubectl get pods -n rahasak
-NAME                     READY   STATUS    RESTARTS   AGE
-nginx-54b5bd6994-8pr6t   1/1     Running   0          32s
-nginx-54b5bd6994-whg9s   1/1     Running   0          32s
-
-
-# now the terraform state files can be found in the docker volume
-❯❯ ls -al /private/var/services/terraform/
-total 16
-drwxr-xr-x 2 root root   80 Feb  5 13:55 .
-drwxrwxrwx 3 root root   60 Feb  5 13:10 ..
--rw-r--r-- 1 root root 9269 Feb  5 13:55 terraform.tfstate
--rw-r--r-- 1 root root  180 Feb  5 13:55 terraform.tfstate.backup
-
-
-# run terraform destroy
-❯❯ docker run --name terra -v /private/var/services/terraform:/app/.state erangaeb/terraform-k8s:0.1 destroy
+# Target specific module
+terraform plan -target=module.1a2b3c4d
+terraform apply -target=module.5e6f7g8h
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+### Extreme Cleanup
 
 ```bash
-
-
+docker rmi -f cloudflare_manager
+docker rmi $(docker images -q)
+docker system prune -af && docker image prune -af && docker system prune -af --volumes && docker system df
 ```

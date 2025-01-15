@@ -1,45 +1,29 @@
-
-# services:
-#   terraform:
-#     container_name: cloudflare_terraform
-#     image: hashicorp/terraform:1.9
-#     volumes:
-#         - .:/infra
-#         - cloudflare_db:/infra
-#         - ./.state:/infra
-#     working_dir: /infra
-#     command: init && plan
-#     environment:
-#         - CLOUDFLARE_ZONE_ID=${CLOUDFLARE_ZONE_ID}
-#     restart: always
-
-# volumes:
-#     cloudflare_db:
-
 services:
   terraform:
-    image: hashicorp/terraform:1.9
-    container_name: cloudflare-terraform
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # image: hashicorp/terraform:1.9
+    container_name: cloudflare_manager
     working_dir: /workspace
     volumes:
-      - ./.terraform:/workspace
-    #   - ./terraform/.terraform:/workspace/.terraform
-    #   - ~/.aws:/root/.aws  # If you need AWS integration
-    environment:
-      CLOUDFLARE_API_TOKEN: ${CLOUDFLARE_API_TOKEN} # Cloudflare API token (load from .env file)
-    entrypoint: ["/bin/sh", "-c"]
-    command: >
-      "while true; do
-        sleep 1000;
-      done"
+      - ./terraform:/workspace
+      - ./scripts:/scripts
+
+    env_file:
+      - .env
+
+    entrypoint: [
+        "/bin/sh",
+        "-c",
+        "rm /workspace/logs.txt && \
+        touch /workspace/logs.txt && \
+        chmod +x /scripts/docker.sh && \
+        /scripts/docker.sh | tee -ai /workspace/logs.txt && \
+        while true; do sleep 1000; done"
+    ]
+
     stdin_open: true
     tty: true
-
-  cloudflare-cli:
-    image: cloudflare/cloudflared:latest
-    container_name: cloudflare-cli
-    command: version  # Replace with the desired command, e.g., `tunnel` or similar
-    environment:
-      CLOUDFLARE_API_TOKEN: ${CLOUDFLARE_API_TOKEN} # Cloudflare API token (load from .env file)
     restart: unless-stopped
 

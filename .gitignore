@@ -1,8 +1,15 @@
 
 
 .env
+.cf-terraforming.yaml
+.terraform.lock.hcl
+terraform.tfvars
+terraform/generated/
+
 .terraform/
 terraform.tfstate*
+
+
 EOF
 
 .DS_Store*
@@ -13,3 +20,5 @@ Thumbs.db
 
 *.un~
 .vscode/
+
+logs*.txt
